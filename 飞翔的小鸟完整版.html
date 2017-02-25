@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>飞翔的小鸟完整版</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		ul,li{
+			list-style: none;
+		}
+		.out{
+			width: 343px;
+			height: 480px;
+			margin: 0 auto;
+			position: relative;
+			border: 1px solid red;
+			overflow: hidden;
+		}
+		.wrap{
+			width: 9999px;
+			height: 480px;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+		.bird{
+			position: absolute;
+			left: 100px;
+			top: 300px;
+			z-index: 3
+		}
+		.duct{
+			position: absolute;
+		}
+		.duct li{
+			height: 423px;
+			position: absolute;
+			left: 443px;
+			top: 0;
+		}
+		.duct_up{
+			width: 62px;
+			height: 200px;
+			position: absolute;
+			background: url(img/up_mod.png) repeat-y;
+			top: 0;
+			left: 300px;
+		}
+		.duct_down{
+			width: 62px;
+			height: 60px;
+			background: url(img/down_mod.png) repeat-y;
+			position: absolute;
+			bottom: 0px;
+			left: 300px;
+		}
+		.grad{
+			position: absolute;
+			z-index: 2;
+			font-size: 18px;
+			font-weight: bold;
+
+		}
+		.img{
+			width: 343px;
+			height: 200px;
+			position: absolute;
+			z-index: 10;
+			top:50%;
+			margin-top: -100px;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<div class="out">
+		<div class="img">
+			<img src="img/head.jpg"><br/>
+			<img src="img/start.jpg" style="cursor: pointer;">
+			<img src="img/game_over.jpg" style="display:none; margin:0 auto; cursor: pointer;">
+		</div>
+	 	<audio src="game_music.mp3" autoplay="autoplay"></audio>
+	    <p class="grad">得分：0</p>
+		<div class="wrap">
+			<img src="img/bg.jpg"><img src="img/bg.jpg">
+		</div>
+		<div class="bird">
+			<img src="img/bird0.png">
+		</div>
+		<ul class="duct">
+		</ul>
+	</div>
+	<script type="text/javascript">
+		var start = document.querySelectorAll("img")[1];
+		var over = document.querySelectorAll("img")[2];
+		var img = document.querySelector(".img");
+		var out = document.querySelector(".out");
+		var wrap = document.querySelector(".wrap");
+		var bird = document.querySelector(".bird");
+		var birdImg = document.querySelectorAll("img")[5];
+		var duct = document.querySelector("ul");
+		var count = 0;
+		var grad = document.querySelector(".grad");
+		var i = 0;
+		var ductIsMove = true;
+		var audio = document.querySelector("audio");
+		start.onclick = function(){
+			img.style.display = "none";
+		var timer = setInterval(function(){
+			i++;
+			if(i>343)
+			{
+				i=0
+			}
+			wrap.style.left = -i +"px";
+		},20)
+		var speed = 0;
+		bird.timer = setInterval(function(){
+			speed = speed + 0.5;
+			if(speed>=15){
+				speed = 15
+			}
+			if(speed >= 0){
+				birdImg.src = "img/down_bird0.png"
+			}else{
+				birdImg.src = "img/up_bird0.png"
+			}
+			if(bird.offsetTop <= 0){
+				bird.style.top = 0
+			}else if(bird.offsetTop >= out.offsetHeight - 100){
+				bird.style.top = out.offsetHeight - 100 +"px";
+				clearInterval(ductTimer);
+				clearInterval(bird.timer);
+				ductIsMove = false;
+				document.onclick = null;
+				audio.src = "game_over.mp3";
+				img.style.display = "block";
+				// start.src = "img/game_over.jpg";
+				over.style.display = "block";
+				start.style.display = "none";
+
+			}
+			bird.style.top = bird.offsetTop + speed +"px";
+			
+		},30)
+		document.onclick = function(){
+			speed = -5;
+			audio.src = "bullet.mp3";
+		}
+
+		var ductTimer = setInterval(function(){
+			var li = document.createElement("li");
+			var bol = true;
+			var h = randFn(60,200);
+			//console.log(h);
+			var h1 = 423 - 100 - h;
+			//console.log (h1);
+			li.innerHTML = "<div class='ducts' style='width: 62px;position: absolute;background: url(img/up_mod.png) repeat-y;top: 0;height:"+h+"px;'><img src='img/up_pipe.png' style='position: absolute;bottom: 0;'></div><div class='ducts' style='width: 62px;background: url(img/down_mod.png) repeat-y;position: absolute;bottom: 0px;height:"+h1+"px;'><img src='img/down_pipe.png'></div>"
+			//console.log(li.innerHTML);
+			duct.appendChild(li);
+			//console.log(duct.children);
+			var liLeft = 343;
+			var timer2 = setInterval(function(){
+				liLeft --;
+				if(ductIsMove == false){
+	                    clearInterval(timer2);
+	                }
+				li.style.left = liLeft + "px";
+				var ducts = document.querySelectorAll(".ducts");
+			    for(var i = 0;i<ducts.length;i++){
+				  var ind = testFn(bird,ducts[i])
+				  if(ind){
+				  	audio.src = "game_over.mp3";
+					speed = 0;
+					document.onclick = null;
+					clearInterval(timer2);
+					clearInterval(ductTimer);
+					img.style.display = "block";
+					over.style.display = "block";
+					start.style.display = "none";
+				  }	 
+			    }
+				if(liLeft <= -62){
+				duct.removeChild(li);
+				clearInterval(timer2);
+			}else if(liLeft <= 36){
+				if(bol){
+					count+=10;
+					grad.innerHTML = "得分：" +count;
+					bol = false;
+				}
+			}
+			
+			},10)
+			 
+		},3000)
+
+	}	
+		function randFn(min,max){
+			return parseInt(Math.random()*(max-min+1))+min
+		}		
+		document.onmousedown = function(ev){
+			var event = ev ||event
+			event.preventDefault();
+		}
+
+		//testFn(bird,lisup[i]);
+		//testFn(bird,lisdown[i]);
+	function testFn(bird,ducts){
+		//鸟的上下左右值：
+			var birdLeft = bird.offsetLeft;
+			var birdTop = bird.offsetTop;
+			var birdRight = bird.offsetLeft + bird.offsetWidth;
+			var birdBottom = bird.offsetTop + bird.offsetHeight;
+			//管道的上下左右值：
+			var ductsLeft = ducts.parentNode.offsetLeft;
+			var ductsTop = ducts.offsetTop;
+			var ductsRight = ducts.parentNode.offsetLeft + ducts.offsetWidth;
+			var ductsBottom = ducts.offsetTop + ducts.offsetHeight;
+			if(birdBottom > ductsTop && birdLeft < ductsRight && birdTop < ductsBottom&& birdRight > ductsLeft){
+				return true;
+		}else{
+			return false;
+		}
+	}
+	over.onclick = function(){
+		location.reload();
+	}
+
+	</script>
+</body>
+</html>
